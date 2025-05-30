@@ -1,68 +1,10 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seznam studentských filmů</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 1em; background: #f9f9f9; }
-    h1 { text-align: center; }
-    .film { background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin: 1em 0; padding: 1em; display: flex; gap: 1em; }
-    .film img { width: 140px; height: auto; border-radius: 4px; }
-    .stars span { cursor: pointer; font-size: 1.5em; color: #ccc; }
-    .stars span.selected { color: gold; }
-    .comment-input { width: 100%; padding: 0.5em; margin-top: 0.5em; }
-    .save-btn { margin-top: 0.5em; padding: 0.4em 1em; background: #0077cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h1>Studentské filmy</h1>
-  <div id="filmy"></div>
-
-  <script>
-    async function nactiFilmy() {
-      const res = await fetch("movies_static.json");
-      const filmy = await res.json();
-      filmy.forEach(f => { f.hodnoceni = 0; f.komentare = []; });
-      zobrazFilmy(filmy);
-    }
-
-    function zobrazFilmy(filmy) {
-      const container = document.getElementById("filmy");
-      container.innerHTML = "";
-
-      filmy.forEach((film, index) => {
-        const filmDiv = document.createElement("div");
-        filmDiv.className = "film";
-
-        const starsHtml = [...Array(5)].map((_, i) => {
-          return `<span data-index="${index}" data-star="${i + 1}" class="star${i < film.hodnoceni ? ' selected' : ''}">⭐</span>`;
-        }).join("");
-
-        filmDiv.innerHTML = `
-          <img src="${film.obrazek}" alt="${film.nazev}" />
-          <div>
-            <h2>${film.nazev}</h2>
-            <p>${film.popis}</p>
-            <p><a href="${film.odkaz}" target="_blank">Zhlédnout film ▶️</a></p>
-            <div class="stars">${starsHtml}</div>
-            <textarea class="comment-input" placeholder="Přidej komentář..."></textarea>
-          </div>
-        `;
-        container.appendChild(filmDiv);
-      });
-
-      document.querySelectorAll(".star").forEach(star => {
-        star.addEventListener("click", e => {
-          const idx = e.target.dataset.index;
-          const val = e.target.dataset.star;
-          filmy[idx].hodnoceni = parseInt(val);
-          zobrazFilmy(filmy);
-        });
-      });
-    }
-
-    nactiFilmy();
-  </script>
-</body>
-</html>
+<script>
+  fetch('movies_static.json')
+    .then(response => response.json())
+    .then(data => {
+      // Zpracování a zobrazení dat
+    })
+    .catch(error => {
+      console.error('Chyba při načítání JSON:', error);
+    });
+</script>
