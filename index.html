@@ -1,60 +1,90 @@
 
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Studentské Filmy – Multifest</title>
+    <meta charset="UTF-8">
+    <title>Seznam studentských filmů</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
-        .film { background: white; margin: 10px auto; padding: 15px; border-radius: 8px; max-width: 800px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .film img { width: 150px; float: left; margin-right: 15px; border-radius: 4px; }
-        .film h2 { margin-top: 0; }
-        .film p { clear: both; }
-        .rating { margin-top: 10px; }
+        body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 2rem; }
+        .film { background: white; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        img { max-width: 200px; display: block; margin-bottom: 1rem; }
+        textarea { width: 100%; height: 60px; }
+        .rating span { cursor: pointer; font-size: 1.5rem; color: #ccc; }
+        .rating .selected { color: gold; }
     </style>
 </head>
 <body>
-    <h1>Seznam Studentských Filmů</h1>
-    <div id="films"></div>
+    <h1>Seznam studentských filmů</h1>
+    <div id="filmy"></div>
 
     <script>
-        fetch('multifest_films_all.json')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('films');
-                data.forEach(film => {
-                    const div = document.createElement('div');
-                    div.className = 'film';
-                    div.innerHTML = `
-                        <img src="${film.image}" alt="Plakát" />
-                        <h2>${film.title}</h2>
-                        <p>${film.description || ''}</p>
-                        <p><a href="${film.video}" target="_blank">Zobrazit video</a></p>
-                        <div class="rating">
-                            <label>Hodnocení:
-                                <select>
-                                    <option value="">Vyberte</option>
-                                    <option value="1">★</option>
-                                    <option value="2">★★</option>
-                                    <option value="3">★★★</option>
-                                    <option value="4">★★★★</option>
-                                    <option value="5">★★★★★</option>
-                                </select>
-                            </label>
-                            <br/>
-                            <label>Komentář: <br/>
-                                <textarea rows="2" cols="50" placeholder="Váš komentář..."></textarea>
-                            </label>
-                        </div>
-                        <div style="clear: both;"></div>
-                    `;
-                    container.appendChild(div);
+        const BIN_ID = "6839ff258960c979a5a3320d";
+        const MASTER_KEY = "$2a$10$Fx.X3yh8m6bwvc8x6EpCr.OEjYT0rk59GfJEWnzWrDG0IgS/H5Sw6";
+
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: { "X-Master-Key": MASTER_KEY }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const filmy = data.record;
+            const container = document.getElementById("filmy");
+
+            filmy.forEach((film, index) => {
+                const div = document.createElement("div");
+                div.className = "film";
+
+                const title = document.createElement("h2");
+                title.textContent = film.title;
+                div.appendChild(title);
+
+                const image = document.createElement("img");
+                image.src = film.image;
+                image.alt = film.title;
+                div.appendChild(image);
+
+                const description = document.createElement("p");
+                description.textContent = film.description;
+                div.appendChild(description);
+
+                const ratingDiv = document.createElement("div");
+                ratingDiv.className = "rating";
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement("span");
+                    star.innerHTML = "★";
+                    if (film.rating >= i) star.classList.add("selected");
+                    star.addEventListener("click", () => {
+                        film.rating = i;
+                        saveData();
+                    });
+                    ratingDiv.appendChild(star);
+                }
+                div.appendChild(ratingDiv);
+
+                const commentBox = document.createElement("textarea");
+                commentBox.placeholder = "Přidejte komentář...";
+                commentBox.value = film.comment || "";
+                commentBox.addEventListener("change", () => {
+                    film.comment = commentBox.value;
+                    saveData();
                 });
-            })
-            .catch(error => {
-                console.error('Chyba při načítání JSON dat:', error);
+                div.appendChild(commentBox);
+
+                container.appendChild(div);
             });
+
+            function saveData() {
+                fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": MASTER_KEY,
+                        "X-Bin-Name": "filmy-vsechny"
+                    },
+                    body: JSON.stringify(filmy)
+                });
+            }
+        });
     </script>
 </body>
 </html>
