@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seznam studentských filmů</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f8f9fa;
+    }
+    h1 {
+      color: #333;
+    }
+    .film {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fff;
+    }
+    .film img {
+      max-width: 200px;
+      float: right;
+      margin-left: 1rem;
+    }
+    .stars {
+      display: flex;
+      gap: 0.3rem;
+      cursor: pointer;
+    }
+    .star {
+      font-size: 1.5rem;
+      color: #ccc;
+    }
+    .star.filled {
+      color: gold;
+    }
+    .comment {
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Studentské filmy z naší fakulty</h1>
+  <div id="film-list">Načítání...</div>
+
+  <script>
+    const BIN_ID = "6839ff258960c979a5a3320d";
+    const MASTER_KEY = "$2a$10$Fx.X3yh8m6bwvc8x6EpCr.OEjYT0rk59GfJEWnzWrDG0IgS/H5Sw6";
+
+    async function fetchFilms() {
+      const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: {
+          "X-Master-Key": MASTER_KEY
+        }
+      });
+      const data = await response.json();
+      return data.record;
+    }
+
+    function createFilmElement(film) {
+      const el = document.createElement("div");
+      el.className = "film";
+      el.innerHTML = `
+        <h2>${film.nazev}</h2>
+        <img src="${film.obrazek}" alt="Plakát k filmu ${film.nazev}">
+        <p>${film.popis}</p>
+        <a href="${film.odkaz}" target="_blank">Zobrazit film</a>
+        <div class="stars" data-id="${film.nazev}">
+          ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">&#9733;</span>`).join("")}
+        </div>
+        <textarea class="comment" placeholder="Přidejte komentář..."></textarea>
+      `;
+      el.querySelectorAll(".star").forEach(star => {
+        star.addEventListener("click", () => {
+          const value = parseInt(star.dataset.value);
+          el.querySelectorAll(".star").forEach(s => s.classList.remove("filled"));
+          for (let i = 0; i < value; i++) {
+            el.querySelectorAll(".star")[i].classList.add("filled");
+          }
+        });
+      });
+      return el;
+    }
+
+    async function loadFilms() {
+      const container = document.getElementById("film-list");
+      try {
+        const films = await fetchFilms();
+        container.innerHTML = "";
+        films.forEach(film => {
+          container.appendChild(createFilmElement(film));
+        });
+      } catch (e) {
+        container.innerHTML = "Nepodařilo se načíst filmy.";
+        console.error(e);
+      }
+    }
+
+    loadFilms();
+  </script>
+</body>
+</html>
