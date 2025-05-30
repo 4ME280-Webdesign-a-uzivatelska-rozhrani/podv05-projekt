@@ -20,16 +20,11 @@
   <div id="filmy"></div>
 
   <script>
-    const binId = "6839dece8960c979a5a32782";
-    const apiKey = "$2a$10$Fx.X3yh8m6bwvc8x6EpCr.OEjYT0rk59GfJEWnzWrDG0IgS/H5Sw6";
-    const apiUrl = `https://api.jsonbin.io/v3/b/${binId}`;
-
     async function nactiFilmy() {
-      const res = await fetch(apiUrl, {
-        headers: { "X-Master-Key": apiKey }
-      });
-      const data = await res.json();
-      zobrazFilmy(data.record);
+      const res = await fetch("movies_static.json");
+      const filmy = await res.json();
+      filmy.forEach(f => { f.hodnoceni = 0; f.komentare = []; });
+      zobrazFilmy(filmy);
     }
 
     function zobrazFilmy(filmy) {
@@ -51,14 +46,12 @@
             <p>${film.popis}</p>
             <p><a href="${film.odkaz}" target="_blank">Zhlédnout film ▶️</a></p>
             <div class="stars">${starsHtml}</div>
-            <textarea class="comment-input" placeholder="Přidej komentář...">${film.komentare.join("\n")}</textarea>
-            <button class="save-btn" data-index="${index}">Uložit</button>
+            <textarea class="comment-input" placeholder="Přidej komentář..."></textarea>
           </div>
         `;
         container.appendChild(filmDiv);
       });
 
-      // Event listener pro hodnocení a komentáře
       document.querySelectorAll(".star").forEach(star => {
         star.addEventListener("click", e => {
           const idx = e.target.dataset.index;
@@ -67,27 +60,6 @@
           zobrazFilmy(filmy);
         });
       });
-
-      document.querySelectorAll(".save-btn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const idx = btn.dataset.index;
-          const textarea = btn.previousElementSibling;
-          filmy[idx].komentare = textarea.value.split("\n").filter(x => x.trim());
-          await ulozFilmy(filmy);
-        });
-      });
-    }
-
-    async function ulozFilmy(filmy) {
-      await fetch(apiUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Master-Key": apiKey
-        },
-        body: JSON.stringify(filmy)
-      });
-      alert("Uloženo!");
     }
 
     nactiFilmy();
