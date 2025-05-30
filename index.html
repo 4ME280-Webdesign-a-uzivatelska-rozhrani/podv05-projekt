@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Studentské Filmy – Multifest</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
+        .film { background: white; margin: 10px auto; padding: 15px; border-radius: 8px; max-width: 800px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .film img { width: 150px; float: left; margin-right: 15px; border-radius: 4px; }
+        .film h2 { margin-top: 0; }
+        .film p { clear: both; }
+        .rating { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Seznam Studentských Filmů</h1>
+    <div id="films"></div>
+
+    <script>
+        fetch('multifest_films_all.json')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('films');
+                data.forEach(film => {
+                    const div = document.createElement('div');
+                    div.className = 'film';
+                    div.innerHTML = `
+                        <img src="${film.image}" alt="Plakát" />
+                        <h2>${film.title}</h2>
+                        <p>${film.description || ''}</p>
+                        <p><a href="${film.video}" target="_blank">Zobrazit video</a></p>
+                        <div class="rating">
+                            <label>Hodnocení:
+                                <select>
+                                    <option value="">Vyberte</option>
+                                    <option value="1">★</option>
+                                    <option value="2">★★</option>
+                                    <option value="3">★★★</option>
+                                    <option value="4">★★★★</option>
+                                    <option value="5">★★★★★</option>
+                                </select>
+                            </label>
+                            <br/>
+                            <label>Komentář: <br/>
+                                <textarea rows="2" cols="50" placeholder="Váš komentář..."></textarea>
+                            </label>
+                        </div>
+                        <div style="clear: both;"></div>
+                    `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(error => {
+                console.error('Chyba při načítání JSON dat:', error);
+            });
+    </script>
+</body>
+</html>
