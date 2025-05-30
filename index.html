@@ -41,7 +41,11 @@
                 const image = document.createElement("img");
                 image.src = film.image;
                 image.alt = film.title;
+                image.style.maxWidth = "200px";
+                image.style.height = "auto";
+
                 div.appendChild(image);
+
 
                 const description = document.createElement("p");
                 description.textContent = film.description;
