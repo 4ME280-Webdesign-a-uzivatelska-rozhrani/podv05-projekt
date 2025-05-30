@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Studentské filmy</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .film { border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin: 10px 0; }
+    img { max-width: 150px; }
+    .stars span { cursor: pointer; font-size: 20px; color: gold; }
+    textarea { width: 100%; height: 60px; margin-top: 5px; }
+    button { margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Seznam studentských filmů</h1>
+  <div id="filmy"></div>
+
+  <script>
+    const BIN_ID = "6839dece8960c979a5a32782";
+    const API_KEY = "$2a$10$Fx.X3yh8m6bwvc8x6EpCr.OEjYT0rk59GfJEWnzWrDG0IgS/H5Sw6";
+
+    function loadFilms() {
+      fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: { "X-Master-Key": API_KEY }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const films = data.record;
+        const container = document.getElementById("filmy");
+        films.forEach((film, index) => {
+          const div = document.createElement("div");
+          div.className = "film";
+          div.innerHTML = `
+            <h2>${film.nazev}</h2>
+            <a href="${film.odkaz}" target="_blank"><img src="${film.obrazek}" alt="${film.nazev}"></a>
+            <p>${film.popis}</p>
+            <div class="stars" data-index="${index}">
+              ${[1,2,3,4,5].map(i => `<span data-star="${i}">&#9733;</span>`).join("")}
+            </div>
+            <textarea placeholder="Komentář">${film.komentar || ""}</textarea>
+            <button onclick="saveComment(${index})">Uložit komentář</button>
+          `;
+          container.appendChild(div);
+        });
+        setupStars();
+      });
+    }
+
+    function setupStars() {
+      document.querySelectorAll(".stars span").forEach(star => {
+        star.addEventListener("click", e => {
+          const index = +e.target.parentElement.dataset.index;
+          const rating = +e.target.dataset.star;
+          fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: { "X-Master-Key": API_KEY }
+          })
+          .then(res => res.json())
+          .then(data => {
+            data.record[index].hodnoceni = rating;
+            updateBin(data.record);
+          });
+        });
+      });
+    }
+
+    function saveComment(index) {
+      const textarea = document.querySelectorAll("textarea")[index];
+      fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        headers: { "X-Master-Key": API_KEY }
+      })
+      .then(res => res.json())
+      .then(data => {
+        data.record[index].komentar = textarea.value;
+        updateBin(data.record);
+      });
+    }
+
+    function updateBin(data) {
+      fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify(data)
+      });
+    }
+
+    loadFilms();
+  </script>
+</body>
+</html>
